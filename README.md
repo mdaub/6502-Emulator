@@ -17,3 +17,7 @@ for release, and
 $ make debug
 ```
 for the debug build.
+
+## Disclaimer
+
+I have so far only tested a small hello world program, and the vast majority of instructions are untested at this point. If you chose to use my code, do so at your own risk!
