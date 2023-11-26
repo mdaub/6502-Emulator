@@ -135,6 +135,10 @@ int address_delay(address_mode mode, byte arg1, byte arg2)
 // emulator overhead.
 int cpu_do_next_op()
 {
+    #ifdef DEBUG
+    char buffer[16];
+    dissasemble(PC, buffer, 16);
+    #endif
     byte opcode = cpu_fetch();
     address_mode mode = (opcode & mode_mask) >> 2;
     byte arg1, arg2;    // stores the (up to) 2 operands of the op
@@ -208,7 +212,7 @@ int cpu_do_next_op()
             }
             else
             {
-                intermediate = A - data - (~P & flag_C);
+                intermediate = (int)A - (int)data - (int)(~P & flag_C);
                 P = (intermediate > 127 || intermediate < -128) ? P | flag_V : P & ~flag_V; // Overflow cond
             }
             P = (intermediate >= 0) ? P | flag_C : P & ~flag_C;

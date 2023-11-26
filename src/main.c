@@ -238,6 +238,11 @@ bool run_terminal_interface()
         puts("Emulator recieved halt command...");
         running = false;
     }
+    // print number
+    else if (command == 0xcc)
+    {
+        printf("IO PRINT BYTE: %d\n", read_memory(0x4000));
+    }
     return running;
 }
 
