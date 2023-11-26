@@ -588,7 +588,7 @@ int dissasemble(uint16_t adr, char* buffer, int buffsize)
         case SBC:
             get_args(count_full_imm[mode], &arg1, &arg2);
             address_mode_str(mode, arg1, arg2, add_str);
-            sprintf(buffer, "EOR %s", add_str);
+            sprintf(buffer, "SBC %s", add_str);
             break;
     }
    
@@ -613,14 +613,14 @@ int dissasemble(uint16_t adr, char* buffer, int buffsize)
             arg1 = cpu_fetch();
             mode = rel;
             address_mode_str(mode, arg1, arg2, add_str);
-            sprintf(buffer, "BCS %s", add_str);
+            sprintf(buffer, "BEQ %s", add_str);
             break;
 
         case BMI:
             arg1 = cpu_fetch();
             mode = rel;
             address_mode_str(mode, arg1, arg2, add_str);
-            sprintf(buffer, "BEQ %s", add_str);
+            sprintf(buffer, "BMI %s", add_str);
             break;
 
         case BNE:
@@ -651,7 +651,7 @@ int dissasemble(uint16_t adr, char* buffer, int buffsize)
             arg1 = cpu_fetch();
             mode = rel;
             address_mode_str(mode, arg1, arg2, add_str);
-            sprintf(buffer, "BCC %s", add_str);
+            sprintf(buffer, "BVS %s", add_str);
             break;
 
         case CLC:
