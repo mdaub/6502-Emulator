@@ -1,0 +1,9 @@
+*.o
+.vscode
+*.*n
+*.gch
+res/test*
+*.out
+*.bin
+daubmos
+src/cpu.txt

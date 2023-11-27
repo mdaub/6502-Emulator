@@ -159,11 +159,12 @@ int cpu_do_next_op()
             get_args(count_full_imm[mode], &arg1, &arg2);
             data = get_data_full_imm(mode, arg1, arg2);
             intermediate = (P & flag_C) + data + A; // add carry to data + A
-            P = (A & 0x80 != intermediate & 0x80) ? P | flag_V : P & ~flag_V; // set V if A.7 != res.7
+            P = ((A & 0x80) != (intermediate & 0x80)) ? P | flag_V : P & ~flag_V; // set V if A.7 != res.7
             P = (A & 0x80) | (P & 0x7f); // set neg flag to A neg
             update_Zflag(intermediate);
             
             /*  TODO: BCD ADD  */
+            P = (P & ~flag_C) | (intermediate > 0xff) * flag_C; 
             A = intermediate & 0xff;
             return ADC_cycles[c_conv[mode]] + address_delay(mode, arg1, arg2);
         
@@ -212,7 +213,7 @@ int cpu_do_next_op()
             }
             else
             {
-                intermediate = (int)A - (int)data - (int)(~P & flag_C);
+                intermediate = A + ~data + (P & flag_C);
                 P = (intermediate > 127 || intermediate < -128) ? P | flag_V : P & ~flag_V; // Overflow cond
             }
             P = (intermediate >= 0) ? P | flag_C : P & ~flag_C;
@@ -409,7 +410,7 @@ int cpu_do_next_op()
         assert(mode == imm || mode == zpg || mode == ind_zpg_x || mode == abs || mode == ind_abs_x);
         get_args(count_full_a[mode], &arg1, &arg2);
         data = get_data_accum(mode, arg1, arg2);
-        P = (P & ~flag_C) | flag_C * (data & 0x80 == 0x80); // set carry flag if bit 7 of data is set
+        P = (P & ~flag_C) | flag_C * ((data & 0x80) == 0x80); // set carry flag if bit 7 of data is set
         data = (data << 1) & 0xfe;
         update_Zflag(data);
         set_data_accum(mode, arg1, arg2, data);
@@ -434,7 +435,7 @@ int cpu_do_next_op()
         get_args(count_full_imm[mode], &arg1, &arg2);
         data = get_data_full_imm(mode, arg1, arg2);
         intermediate = COMP_reg - data;
-        P = (P & ~flag_N) | (flag_N * (intermediate & 0x80 == 0x80));
+        P = (P & ~flag_N) | (flag_N * ((intermediate & 0x80) == 0x80));
         P = (P & ~flag_C) | (flag_C * (intermediate >= data));
         P = (P & ~flag_Z) | (flag_Z * (intermediate == 0));
         return mode == imm ? 2 : mode == zpg ? 3 : 4;
@@ -488,7 +489,7 @@ int cpu_do_next_op()
         assert(mode == imm || mode == zpg || mode == abs || mode == ind_abs_x || mode == ind_zpg_x);
         get_args(count_full_a[mode], &arg1, &arg2);
         data = get_data_accum(mode, arg1, arg2);
-        intermediate = (data & 0x80 == 0x80) * flag_C;
+        intermediate = ((data & 0x80) == 0x80) * flag_C;
         data = (data << 1) & 0xfe;
         data |= P & flag_C;
         P = (P & ~flag_C) | intermediate; // set carry to bit 7 of original data
@@ -500,7 +501,7 @@ int cpu_do_next_op()
         assert(mode == imm || mode == zpg || mode == abs || mode == ind_abs_x || mode == ind_zpg_x);
         get_args(count_full_a[mode], &arg1, &arg2);
         data = get_data_accum(mode, arg1, arg2);
-        intermediate = (data & 0x01 == 0x01) * flag_C;
+        intermediate = ((data & 0x01) == 0x01) * flag_C;
         data = (data >> 1) & 0x7f;
         data |= (P & flag_C != 0) * 0x80; // set bit 7 if carry bit is high
         P = (P & ~flag_C) | intermediate; // set carry to bit 0 of original data
@@ -1003,12 +1004,12 @@ void update_Zflag(byte res)
 
 void update_Nflag(byte res)
 {
-    cpu_FLAGS = (P & ~flag_N) | (res & 0x80 > 0) * flag_N;
+    cpu_FLAGS = (P & ~flag_N) | ((res & 0x80) > 0) * flag_N;
 }
 
 void update_Cflag(int res)
 {
-    cpu_FLAGS = (P & ~flag_C) | (res & 0x100 > 0) * flag_C;
+    cpu_FLAGS = (P & ~flag_C) | ((res & 0x100) > 0) * flag_C;
 }
 
 /*
