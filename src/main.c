@@ -243,6 +243,18 @@ bool run_terminal_interface()
     {
         printf("IO PRINT BYTE: %d\n", read_memory(0x4000));
     }
+    // print unsigned word
+    else if (command == 0xcd)
+    {
+        int word = read_memory(0x4000) | (read_memory(0x4001) << 8);
+        printf("IO PRINT WORD: %d\n", word);
+    }
+    // signed word
+    else if (command == 0xce)
+    {
+        int16_t word = read_memory(0x4000) | (read_memory(0x4001) << 8);
+        printf("IO PRINT WORD: %d\n", word);
+    }
     return running;
 }
 
@@ -261,7 +273,14 @@ void debug_mode()
         printf("\nCurrent Instruction: '%s'\n", buffer);
 
         fgets(buffer, 256, stdin); // get user input
-
+        for(int i = 0; i < 256; i++)
+        {
+            if(buffer[i] == '\n')
+            {
+                buffer[i] = 0;
+                break;
+            }
+        }
         // next or n (single step)
         if(strncmp(buffer, "next", 4) == 0 || strcmp(buffer, "n") == 0)
         {
